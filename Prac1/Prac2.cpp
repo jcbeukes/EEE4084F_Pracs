@@ -55,19 +55,31 @@ int main(int argc, char** argv){
  // Allocated RAM for the output image
  if(!Output.Allocate(Input.Width, Input.Height, Input.Components)) return -2;
 
- // This is example code of how to copy image files ----------------------------
- printf("Start of example code...\n");
- for(j = 0; j < 10; j++){
-  tic();
-  int x, y;
-  for(y = 0; y < Input.Height; y++){
-   for(x = 0; x < Input.Width*Input.Components; x++){
-    Output.Rows[y][x] = Input.Rows[y][x];
-   }
+ // Median filter ----------------------------
+printf("Start of Median filter code...\n");
+tic();
+int x, y, i, j, k;
+int pixels[81]; //Array holding pixels to sort
+
+//Iterate over all of the pixels in the image
+for(y = 0; y < Input.Height; y++){
+  for(x = 0; x < Input.Width*Input.Components; x++){
+    k = 0;
+    for(j = (y-4); y < (y+5); y++){
+      for(i = (x-12); x < (x+13); x+=3){
+        //Populate array and handle boundry cases by using 0's.
+        if(j < 0 or i < 0){pixels[k] = 0;}
+        else if(j> Input.Height or i > Input.Width*Input.Components){pixels[k] = 0;}
+        else{pixels[k] = Input.Rows[y][x];}
+      }
+    }
+    //Sort the array
+
+    Output.Rows[y][x] = pixels[40]; //Median value
   }
-  printf("Time = %lg ms\n", (double)toc()/1e-3);
- }
- printf("End of example code...\n\n");
+}
+printf("Time = %lg ms\n", (double)toc()/1e-3);
+printf("End of Median filter code...\n\n");
  // End of example -------------------------------------------------------------
 
  // Spawn threads...
