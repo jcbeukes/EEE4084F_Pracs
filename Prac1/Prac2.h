@@ -48,11 +48,11 @@ void* Thread_Main(void* Parameter);
 //------------------------------------------------------------------------------
 
 //swaps two values with each other. For use in bubblesort().
-void swap(int* x, int* y);
+void swap(int *xp, int *yp);
 //------------------------------------------------------------------------------
 
 //Implementation of bubble sort
-void bubblesort(int arr[]);
+void bubbleSort(int arr[], int n);
 //------------------------------------------------------------------------------
 
 #endif

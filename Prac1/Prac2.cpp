@@ -39,28 +39,37 @@ void* Thread_Main(void* Parameter){
 }
 //------------------------------------------------------------------------------
 
-void swap(int* x, int* y){
-    int temp = *x;
-    *x = *y;
-    *y = temp;
+
+void swap(int *xp, int *yp)
+{
+    int temp = *xp;
+    *xp = *yp;
+    *yp = temp;
 }
-
-//------------------------------------------------------------------------------
-
-void bubblesort(int arr[]){
-    int in, out;
-    bool swapped;
-    for(out = 0; out < 81-1; out++){
-        swapped = false;
-        for(in = 0; 81-out-1; in++){
-            if(arr[in]<arr[in+1]){
-                swap(&arr[in], &arr[in+1]);
-                swapped = true;
-            }
+ 
+// An optimized version of Bubble Sort
+void bubbleSort(int arr[], int n)
+{
+   int i, j;
+   bool swapped;
+   for (i = 0; i < n-1; i++)
+   {
+     swapped = false;
+     for (j = 0; j < n-i-1; j++)
+     {
+        if (arr[j] > arr[j+1])
+        {
+           swap(&arr[j], &arr[j+1]);
+           swapped = true;
         }
-        if(swapped==false){break;}
-    }
+     }
+ 
+     // IF no two elements were swapped by inner loop, then break
+     if (swapped == false)
+        break;
+   }
 }
+
 //------------------------------------------------------------------------------
 
 
@@ -82,6 +91,7 @@ int main(int argc, char** argv){
 
  // Median filter ----------------------------
 printf("Start of Median filter code...\n");
+
 tic();
 int x, y, i, p, k;
 int pixels[81]; //Array holding pixels to sort
@@ -100,7 +110,7 @@ for(y = 0; y < Input.Height; y++){
       }
     }
     //Sort the array
-    bubblesort(pixels);
+    bubbleSort(pixels, 81);
     Output.Rows[y][x] = pixels[40]; //Median value
   }
 }

@@ -24,3 +24,14 @@
 1456376214 c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\tools\timer.h
 	<stdio.h>
 
+1520271791 source:c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\prac2.cpp
+	"Prac2.h"
+
+1520271778 c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\prac2.h
+	<math.h>
+	<stdio.h>
+	<stdlib.h>
+	<pthread.h>
+	"JPEG.h"
+	"Timer.h"
+
