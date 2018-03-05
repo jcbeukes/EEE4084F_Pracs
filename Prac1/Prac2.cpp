@@ -39,6 +39,31 @@ void* Thread_Main(void* Parameter){
 }
 //------------------------------------------------------------------------------
 
+void swap(int* x, int* y){
+    int temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+//------------------------------------------------------------------------------
+
+void bubblesort(int arr[]){
+    int in, out;
+    bool swapped;
+    for(out = 0; out < 81-1; out++){
+        swapped = false;
+        for(in = 0; 81-out-1; in++){
+            if(arr[in]<arr[in+1]){
+                swap(&arr[in], &arr[in+1]);
+                swapped = true;
+            }
+        }
+        if(swapped==false){break;}
+    }
+}
+//------------------------------------------------------------------------------
+
+
 int main(int argc, char** argv){
  int j;
 
@@ -58,23 +83,24 @@ int main(int argc, char** argv){
  // Median filter ----------------------------
 printf("Start of Median filter code...\n");
 tic();
-int x, y, i, j, k;
+int x, y, i, p, k;
 int pixels[81]; //Array holding pixels to sort
 
 //Iterate over all of the pixels in the image
 for(y = 0; y < Input.Height; y++){
   for(x = 0; x < Input.Width*Input.Components; x++){
     k = 0;
-    for(j = (y-4); y < (y+5); y++){
-      for(i = (x-12); x < (x+13); x+=3){
-        //Populate array and handle boundry cases by using 0's.
-        if(j < 0 or i < 0){pixels[k] = 0;}
-        else if(j> Input.Height or i > Input.Width*Input.Components){pixels[k] = 0;}
+    for(p = (y-4); p < (y+5); p++){
+      for(i = (x-12); i < (x+13); i+=3){
+        //Populate array and handle boundary cases by using 0's.
+        if(p < 0 or i < 0){pixels[k] = 0;}
+        else if(p > Input.Height or i > Input.Width*Input.Components){pixels[k] = 0;}
         else{pixels[k] = Input.Rows[y][x];}
+        k+=1;
       }
     }
     //Sort the array
-
+    bubblesort(pixels);
     Output.Rows[y][x] = pixels[40]; //Median value
   }
 }

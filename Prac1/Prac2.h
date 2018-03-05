@@ -47,5 +47,13 @@ pthread_mutex_t Mutex; // General-purpose MutEx
 void* Thread_Main(void* Parameter);
 //------------------------------------------------------------------------------
 
+//swaps two values with each other. For use in bubblesort().
+void swap(int* x, int* y);
+//------------------------------------------------------------------------------
+
+//Implementation of bubble sort
+void bubblesort(int arr[]);
+//------------------------------------------------------------------------------
+
 #endif
 //------------------------------------------------------------------------------
