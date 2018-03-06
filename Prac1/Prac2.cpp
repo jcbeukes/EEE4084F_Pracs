@@ -103,9 +103,10 @@ for(y = 0; y < Input.Height; y++){
     for(p = (y-4); p < (y+5); p++){
       for(i = (x-12); i < (x+13); i+=3){
         //Populate array and handle boundary cases by using 0's.
-        if(p < 0 or i < 0){pixels[k] = 0;}
-        else if(p > Input.Height or i > Input.Width*Input.Components){pixels[k] = 0;}
-        else{pixels[k] = Input.Rows[y][x];}
+        if((p>0) && (p<Input.Height) && (i>0) && (i<Input.Width*Input.Components)){
+        	pixels[k] = Input.Rows[p][i];
+        }
+        else{pixels[k] = 0;}
         k+=1;
       }
     }
