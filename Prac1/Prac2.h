@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <algorithm>
 //------------------------------------------------------------------------------
 
 #include "JPEG.h"
@@ -45,14 +46,6 @@ pthread_mutex_t Mutex; // General-purpose MutEx
 
 // The thread "main" function.  Receives a unique thread ID as parameter
 void* Thread_Main(void* Parameter);
-//------------------------------------------------------------------------------
-
-//swaps two values with each other. For use in bubblesort().
-void swap(int *xp, int *yp);
-//------------------------------------------------------------------------------
-
-//Implementation of bubble sort
-void bubbleSort(int arr[], int n);
 //------------------------------------------------------------------------------
 
 #endif

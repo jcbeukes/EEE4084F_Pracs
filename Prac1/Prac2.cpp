@@ -39,40 +39,6 @@ void* Thread_Main(void* Parameter){
 }
 //------------------------------------------------------------------------------
 
-
-void swap(int *xp, int *yp)
-{
-    int temp = *xp;
-    *xp = *yp;
-    *yp = temp;
-}
- 
-// An optimized version of Bubble Sort
-void bubbleSort(int arr[], int n)
-{
-   int i, j;
-   bool swapped;
-   for (i = 0; i < n-1; i++)
-   {
-     swapped = false;
-     for (j = 0; j < n-i-1; j++)
-     {
-        if (arr[j] > arr[j+1])
-        {
-           swap(&arr[j], &arr[j+1]);
-           swapped = true;
-        }
-     }
- 
-     // IF no two elements were swapped by inner loop, then break
-     if (swapped == false)
-        break;
-   }
-}
-
-//------------------------------------------------------------------------------
-
-
 int main(int argc, char** argv){
  int j;
 
@@ -81,7 +47,7 @@ int main(int argc, char** argv){
  pthread_mutex_init(&Mutex, 0);
 
  // Read the input image
- if(!Input.Read("Data/greatwall.jpg")){
+ if(!Input.Read("Data/small.jpg")){
   printf("Cannot read image\n");
   return -1;
  }
@@ -111,7 +77,7 @@ for(y = 0; y < Input.Height; y++){
       }
     }
     //Sort the array
-    bubbleSort(pixels, 81);
+    std::sort(pixels, pixels + 81);
     Output.Rows[y][x] = pixels[40]; //Median value
   }
 }
