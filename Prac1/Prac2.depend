@@ -1,34 +1,15 @@
 # depslib dependency file v1.0
-1456375782 source:c:\users\hanne\downloads\source\prac2.cpp
+1520342640 source:c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\prac2.cpp
 	"Prac2.h"
 
-1456330138 c:\users\hanne\downloads\source\prac2.h
+1520342402 c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\prac2.h
 	<math.h>
 	<stdio.h>
 	<stdlib.h>
 	<pthread.h>
+	<algorithm>
 	"JPEG.h"
 	"Timer.h"
-
-1456208152 c:\users\hanne\downloads\source\tools\jpeg.h
-	<stdio.h>
-	"jpeglib.h"
-
-1456130580 c:\users\hanne\downloads\source\libraries\libjpeg\jpeglib.h
-	"jconfig.h"
-	"jmorecfg.h"
-	"jpegint.h"
-	"jerror.h"
-
-1456130580 c:\users\hanne\downloads\source\libraries\libjpeg\jconfig.h
-
-1456130580 c:\users\hanne\downloads\source\libraries\libjpeg\jmorecfg.h
-
-1456376214 c:\users\hanne\downloads\source\tools\timer.h
-	<stdio.h>
-
-1456152502 source:c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\tools\jpeg.cpp
-	"JPEG.h"
 
 1456208152 c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\tools\jpeg.h
 	<stdio.h>
@@ -44,22 +25,14 @@
 
 1456130580 c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\libraries\libjpeg\jmorecfg.h
 
+1456376214 c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\tools\timer.h
+	<stdio.h>
+
+1456152502 source:c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\tools\jpeg.cpp
+	"JPEG.h"
+
 1456376360 source:c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\tools\timer.cpp
 	"Timer.h"
 	<windows.h>
 	<time.h>
-
-1456376214 c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\tools\timer.h
-	<stdio.h>
-
-1520317344 source:c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\prac2.cpp
-	"Prac2.h"
-
-1520275315 c:\users\hanne\onedrive\documents\github\eee4084f_pracs\prac1\prac2.h
-	<math.h>
-	<stdio.h>
-	<stdlib.h>
-	<pthread.h>
-	"JPEG.h"
-	"Timer.h"
 

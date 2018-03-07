@@ -29,41 +29,19 @@ void* Thread_Main(void* Parameter){
   printf("Hello from thread %d\n", ID);
  pthread_mutex_unlock(&Mutex);
 
- for(int j = 0; j < 1e6; j++); // Do some heavy calculation
+int start, stop, size;
 
- pthread_mutex_lock(&Mutex);
-  printf("Thread %d: I QUIT!\n", ID);
- pthread_mutex_unlock(&Mutex);
+size = Input.Height/Thread_Count;
+start = ID*size;
 
- return 0;
-}
-//------------------------------------------------------------------------------
+if(ID == (Thread_Count-1)){stop = Input.Height;}
+else					  {stop = (ID+1)*size;}
 
-int main(int argc, char** argv){
- int j;
-
- // Initialise everything that requires initialisation
- tic();
- pthread_mutex_init(&Mutex, 0);
-
- // Read the input image
- if(!Input.Read("Data/small.jpg")){
-  printf("Cannot read image\n");
-  return -1;
- }
-
- // Allocated RAM for the output image
- if(!Output.Allocate(Input.Width, Input.Height, Input.Components)) return -2;
-
- // Median filter ----------------------------
-printf("Start of Median filter code...\n");
-
-tic();
 int x, y, i, p, k;
 int pixels[81]; //Array holding pixels to sort
 
 //Iterate over all of the pixels in the image
-for(y = 0; y < Input.Height; y++){
+for(y = start; y < stop; y++){
   for(x = 0; x < Input.Width*Input.Components; x++){
     k = 0;
     for(p = (y-4); p < (y+5); p++){
@@ -81,8 +59,61 @@ for(y = 0; y < Input.Height; y++){
     Output.Rows[y][x] = pixels[40]; //Median value
   }
 }
-printf("Time = %lg ms\n", (double)toc()/1e-3);
-printf("End of Median filter code...\n\n");
+
+ pthread_mutex_lock(&Mutex);
+  printf("Thread %d: I QUIT!\n", ID);
+ pthread_mutex_unlock(&Mutex);
+
+ return 0;
+}
+//------------------------------------------------------------------------------
+
+int main(int argc, char** argv){
+ int j;
+
+ // Initialise everything that requires initialisation
+ tic();
+ pthread_mutex_init(&Mutex, 0);
+
+ // Read the input image
+ if(!Input.Read("Data/greatwall.jpg")){
+  printf("Cannot read image\n");
+  return -1;
+ }
+
+ // Allocated RAM for the output image
+ if(!Output.Allocate(Input.Width, Input.Height, Input.Components)) return -2;
+
+ // Median filter ----------------------------
+// printf("Start of Median filter code...\n");
+
+// tic();
+
+// int x, y, i, p, k;
+// int pixels[81]; //Array holding pixels to sort
+
+// //Iterate over all of the pixels in the image
+// for(y = 0; y < Input.Height; y++){
+//   for(x = 0; x < Input.Width*Input.Components; x++){
+//     k = 0;
+//     for(p = (y-4); p < (y+5); p++){
+//       for(i = (x-12); i < (x+13); i+=3){
+//         //Populate array and handle boundary cases by using 0's.
+//         if((p>0) && (p<Input.Height) && (i>0) && (i<Input.Width*Input.Components)){
+//         	pixels[k] = Input.Rows[p][i];
+//         }
+//         else{pixels[k] = 0;}
+//         k+=1;
+//       }
+//     }
+//     //Sort the array
+//     std::sort(pixels, pixels + 81);
+//     Output.Rows[y][x] = pixels[40]; //Median value
+//   }
+// }
+
+// printf("Time = %lg ms\n", (double)toc()/1e-3);
+// printf("End of Median filter code...\n\n");
  // End of example -------------------------------------------------------------
 
  // Spawn threads...

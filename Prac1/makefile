@@ -10,7 +10,7 @@ OBJS = obj/*
 ARCH = $(shell uname -m)
 OS   = $(shell uname -s)
 
-CC = g++ -std=c++11
+CC = g++
 
 LDLIBS  = -L/usr/lib -lm -ljpeg -pthread
 INCLUDE = -ITools
