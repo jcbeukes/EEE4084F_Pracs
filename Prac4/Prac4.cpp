@@ -59,8 +59,7 @@ void Master () {
    int  j;              //! j: Loop counter
    int get[1];    //! Return Buffer
    int send[3];      //! Send Buffer (Segment Size, start, stop)
-   char buff[BUFSIZE];  //! buff: Buffer for transferring message data
-   std::vector<char> byteBuff;
+   std::vector<char> byteBuff; //! byteBuff: Buffer for transferring message data
    MPI_Status stat;     //! stat: Status of the MPI application
 
    // Read the input image
@@ -84,9 +83,9 @@ void Master () {
       
       byteBuff.resize(stop - start, Input.Width*Input.Components); //Create vector with appropriate size
       
-      send[0] = (stop - start)*Input.Width*Input.Components; 
-      send[1] = start;
-      send[2] = stop;
+      send[0] = input.Height; 
+      send[1] = stop - start;
+      send[2] = Input.Width*Input.Components;
       
       int k =0;
       int p =0;
@@ -111,21 +110,52 @@ void Master () {
 /** This is the Slave function, the workers of this MPI application. */
 void Slave(int ID){
  // Start of "Hello World" example..............................................
+ int dim[3];
  char idstr[32];
- char buff [BUFSIZE];
-
  MPI_Status stat;
 
  // receive from rank 0 (master):
  // This is a blocking receive, which is typical for slaves.
- MPI_Recv(buff, BUFSIZE, MPI_CHAR, 0, TAG, MPI_COMM_WORLD, &stat);
- sprintf(idstr, "Processor %d ", ID);
- strncat(buff, idstr, BUFSIZE-1);
- strncat(buff, "reporting for duty", BUFSIZE-1);
+ // Recieve dimensions and total size of data from master.
+ // Create matrices of the appropriate size to work with 
+ // and send reply to Master
+ MPI_Recv(dim, 3, MPI_INT, 0, TAG, MPI_COMM_WORLD, &stat);
+ char In [dim[1]][dim[2]]; 
+ char Out [dim[1]][dim[2]];
+ MPI_Send(dim, 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
 
- // send to rank 0 (master):
- MPI_Send(buff, BUFSIZE, MPI_CHAR, 0, TAG, MPI_COMM_WORLD);
- // End of "Hello World" example................................................
+ // receive from rank 0 (master):
+ // receive data to work with.
+ //reply to master.
+MPI_Recv(In, dim[0], MPI_CHAR, 0, TAG, MPI_COMM_WORLD, &stat);
+
+MPI_Send(dim, 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
+
+
+int x, y, i, p, k;
+int pixels[81]; //Array holding pixels to sort
+
+//Iterate over all of the pixels in the image
+for(y = 0; y < dim[1]; y++){
+  for(x = 0; x < dim[2]; x++){
+    k = 0;
+    for(p = (y-4); p < (y+5); p++){
+      for(i = (x-12); i < (x+13); i+=3){
+        //Populate array and handle boundary cases by using 0's.
+        if((p>0) && (p<dim[0]) && (i>0) && (i<dim[2])){
+        	pixels[k] = In[p][i];
+        }
+        else{pixels[k] = 0;}
+        k+=1;
+      }
+    }
+    //Sort the array
+    std::sort(pixels, pixels + 81);
+    Out[y][x] = pixels[40]; //Median value
+  }
+}
+ //Return the filtered data to the Master.
+MPI_Send(Out, dim[0], MPI_CHAR, 0, TAG, MPI_COMM_WORLD);
 }
 //------------------------------------------------------------------------------
 
