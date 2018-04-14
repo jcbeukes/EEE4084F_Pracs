@@ -54,54 +54,79 @@
 /** This is the master node function, describing the operations
     that the master will be doing */
 void Master () {
-   //! <h3>Local vars</h3>
-   // The above outputs a heading to doxygen function entry
-   int  j;              //! j: Loop counter
-   int get[1];    //! Return Buffer
-   int send[3];      //! Send Buffer (Segment Size, start, stop)
-   std::vector<char> byteBuff; //! byteBuff: Buffer for transferring message data
-   MPI_Status stat;     //! stat: Status of the MPI application
+  //! <h3>Local vars</h3>
+  // The above outputs a heading to doxygen function entry
+  int  j;              //! j: Loop counter
+  int get[1];    //! Return Buffer
+  int send[3];      //! Send Buffer (Segment Size, start, stop)
+  std::vector<char> byteBuff; //! byteBuff: Buffer for transferring message data
+  MPI_Status stat;     //! stat: Status of the MPI application
 
-   // Read the input image
-   if(!Input.Read("Data/greatwall.jpg")){
-      printf("Cannot read image\n");
-      return;
-   }
+  // Read the input image
+  if(!Input.Read("Data/greatwall.jpg")){
+    printf("Cannot read image\n");
+    return;
+  }
 
-   // Allocated RAM for the output image
-   if(!Output.Allocate(Input.Width, Input.Height, Input.Components)) return;
+  // Allocated RAM for the output image
+  if(!Output.Allocate(Input.Width, Input.Height, Input.Components)) return;
 
-   int start, stop, size;
+  int start, stop, size;
 
-   size = Input.Height/(numprocs-1);
+  size = Input.Height/(numprocs-1);
 
-   printf("0: We have %d processors\n", numprocs);
-   for(j = 1; j < numprocs; j++) {
-      start = j*size;                              //Determine start of segment
-      if(j == (numprocs-1)){stop = Input.Height;}  //Determine stop of segment
-      else{stop = (j+1)*size;}
-      
-      byteBuff.resize(stop - start, Input.Width*Input.Components); //Create vector with appropriate size
-      
-      send[0] = input.Height; 
-      send[1] = stop - start;
-      send[2] = Input.Width*Input.Components;
-      
-      int k =0;
-      int p =0;
-      int col = 0;
-      for (k = start; k < stop; k+=1){                            //Populate 'byteBuff' vector with relevant data
-         for (p = 0;p < Input.Width*Input.Components; p+=1){
-            byteBuf[col][p] = Input.Rows[k][p];
-         }
-         bufCount+=1;
+  printf("0: We have %d processors\n", numprocs);
+  for(j = 1; j < numprocs; j++) {
+    start = j*size;                              //Determine start of segment
+    if(j == (numprocs-1)){stop = Input.Height;}  //Determine stop of segment
+    else{stop = (j+1)*size;}
+
+    byteBuff.resize(stop - start, Input.Width*Input.Components); //Create vector with appropriate size
+
+    send[0] = input.Height; 
+    send[1] = stop - start;
+    send[2] = Input.Width*Input.Components;
+
+    int k =0;
+    int p =0;
+    int col = 0;
+    for (k = start; k < stop; k+=1){                            //Populate 'byteBuff' vector with relevant data
+      for (p = 0;p < Input.Width*Input.Components; p+=1){
+        byteBuf[col][p] = Input.Rows[k][p];
       }
-      MPI_Send(send, 3, MPI_INT, j, TAG, MPI_COMM_WORLD);          //Send Dimensions
-      MPI_Recv(returnVal, 1, MPI_INT, j, TAG, MPI_COMM_WORLD, &stat); //Get Response - Prevents blocking
-      MPI_Send(byteBuf, send[0], MPI_CHAR, j, TAG, MPI_COMM_WORLD); //Send Data
-      MPI_Recv(get, 1, MPI_INT, j, TAG, MPI_COMM_WORLD, &stat); //Get Resonse
-      printf("0: Slave %d started\n", j);
-   }
+      bufCount+=1;
+    }
+    MPI_Send(send, 3, MPI_INT, j, TAG, MPI_COMM_WORLD);          //Send Dimensions
+    MPI_Recv(returnVal, 1, MPI_INT, j, TAG, MPI_COMM_WORLD, &stat); //Get Response - Prevents blocking
+    MPI_Send(byteBuf, send[0], MPI_CHAR, j, TAG, MPI_COMM_WORLD); //Send Data
+    MPI_Recv(get, 1, MPI_INT, j, TAG, MPI_COMM_WORLD, &stat); //Get Resonse
+    printf("0: Slave %d started\n", j);
+  }
+  for(j = 1; j < numprocs; j++){
+    
+    start = j*size;                              //Determine start of segment
+    if(j == (numprocs-1)){stop = Input.Height;}  //Determine stop of segment
+    else{stop = (j+1)*size;}
+    byteBuff.resize(stop - start, Input.Width*Input.Components); //Create vector with appropriate size
+
+    MPI_Recv(byteBuf, (stop - start)* Input.Width * Input.Components, MPI_CHAR, j, TAG, MPI_COMM_WORLD, &stat); //Get Result
+    printf("0: Slave %d Finished\n", j);
+
+    int k =0;
+    int p =0;
+    int col = 0;
+    for (k = start; k < stop; k+=1){  //Recombine
+      for (p = 0;p < Input.Width * Input.Components;p+=1){
+        Output.Rows[k][p] = byteBuf[col][p];
+      }
+      bufCount+=1;
+    }
+    printf("0: Slave %d Reassembled\n", j);
+  }
+  if(!Output.Write("Data/Output.jpg")){
+  printf("Cannot write image\n");
+  return;
+ }
 }
 
 
