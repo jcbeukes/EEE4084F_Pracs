@@ -23,121 +23,104 @@
  *  the MPI libraries for prallel or cluster-based programming.
  */
 
-// Includes needed for the program
+
 #include "Prac4.h"
-#include <vector>
 
-/** This is the master node function, describing the operations
-    that the master will be doing */
-void Master () {
-  //! <h3>Local vars</h3>
-  // The above outputs a heading to doxygen function entry
-  int  j;              //! j: Loop counter
-  int get[1];    //! Return Buffer
-  int send[3];      //! Send Buffer (Segment Size, start, stop)
-  
-  MPI_Status stat;     //! stat: Status of the MPI application
+void Master(){
+ int  j;
+ int get[1];  //Simple single entry Return Buffer
+ int send[3];    //Simple 3-entry Send Buffer (Segment Size, X Width, Y Height)
+ MPI_Status stat;
 
-  // Read the input image
-  if(!Input.Read("Data/greatwall.jpg")){
-    printf("Cannot read image\n");
-    return;
+ if(!Input.Read("Data/greatwall.jpg")){
+  printf("Cannot read image\n");
+  return;
+ }
+
+ if(!Output.Allocate(Input.Width, Input.Height, Input.Components)) return;
+
+ int yDiv = std::floor((float)(Input.Height)/(numprocs-1));
+ int size = Input.Height;
+ char buf [yDiv][Input.Width * Input.Components];
+
+ printf("0: Slave %d started\n", j);
+ for(j = 1; j < numprocs; j++){
+  send[0] = (j < numprocs-1 ? yDiv * Input.Width * Input.Components: size * Input.Width * Input.Components);
+  send[1] = Input.Width * Input.Components;
+  send[2] = yDiv;
+
+  int k =0;
+  int p =0;
+  int col = 0;
+  for (k = yDiv*(j-1); k < yDiv*(j);k+=1){
+    for (p = 0;p < Input.Width * Input.Components;p+=1){
+        buf[col][p] = Input.Rows[k][p];
+
+    }col+=1;
+
   }
-  
-  int yDiv = std::floor((float)(Input.Height)/(numprocs-1));
-  char byteBuff[yDiv][Input.Height*Input.Components]; //! byteBuff: Buffer for transferring message data
+  printf("0: We have %d slaves\n", numprocs-1);
+  MPI_Send(send, 3, MPI_INT, j, TAG, MPI_COMM_WORLD); //Send Dimensions
+  MPI_Recv(get, 1, MPI_INT, j, TAG, MPI_COMM_WORLD, &stat); //Get Response - Prevents blocking
+  MPI_Send(buf, yDiv * Input.Width * Input.Components, MPI_CHAR, j, TAG, MPI_COMM_WORLD); //Send Data
+  MPI_Recv(get, 1, MPI_INT, j, TAG, MPI_COMM_WORLD, &stat); //Get Response
+  size-=yDiv;
+ }
+ for(j = 1; j < numprocs; j++){
+  MPI_Recv(buf, yDiv * Input.Width * Input.Components, MPI_CHAR, j, TAG, MPI_COMM_WORLD, &stat); //Get Result
+  printf("0: Slave %d Finished\n", j);
+  int k =0;
+  int p =0;
+  int col = 0;
+  for (k = yDiv*(j-1); k < yDiv*(j);k+=1){  //Recombine
+    for (p = 0;p < Input.Width * Input.Components;p+=1){
+      Output.Rows[k][p] = buf[col][p];
 
-  // Allocated RAM for the output image
-  if(!Output.Allocate(Input.Width, Input.Height, Input.Components)) return;
-
-  int start, stop, size;
-
-  size = Input.Height/(numprocs-1);
-
-  printf("0: We have %d processors\n", numprocs);
-  for(j = 1; j < numprocs; j++) {
-
-
-    send[0] = (j < numprocs-1 ? yDiv * Input.Width * Input.Components:  Input.Height * Input.Width * Input.Components); 
-    send[1] = yDiv;
-    send[2] = Input.Width*Input.Components;
-
-    int k =0;
-    int p =0;
-    int col = 0;
-    for (k = yDiv*(j-1); k < yDiv*j; k+=1){                            //Populate 'byteBuff' vector with relevant data
-      for (p = 0;p < Input.Width*Input.Components; p+=1){
-        byteBuff[col][p] = Input.Rows[k][p];
-      }
-      col+=1;
-    }
-    MPI_Send(send, 3, MPI_INT, j, TAG, MPI_COMM_WORLD);          //Send Dimensions
-    MPI_Recv(get, 1, MPI_INT, j, TAG, MPI_COMM_WORLD, &stat); //Get Response - Prevents blocking
-    MPI_Send(byteBuff, send[0], MPI_CHAR, j, TAG, MPI_COMM_WORLD); //Send Data
-    MPI_Recv(get, 1, MPI_INT, j, TAG, MPI_COMM_WORLD, &stat); //Get Resonse
-    printf("0: Slave %d started\n", j);
+    }col+=1;
   }
-  for(j = 1; j < numprocs; j++){
 
-    MPI_Recv(byteBuff, (stop - start)* Input.Width * Input.Components, MPI_CHAR, j, TAG, MPI_COMM_WORLD, &stat); //Get Result
-    printf("0: Slave %d Finished\n", j);
 
-    int k =0;
-    int p =0;
-    int col = 0;
-    for (k = yDiv*(j-1); k < yDiv*j; k+=1){  //Recombine
-      for (p = 0;p < Input.Width * Input.Components;p+=1){
-        Output.Rows[k][p] = byteBuff[col][p];
-      }
-      col+=1;
-    }
-    printf("0: Slave %d Reassembled\n", j);
-  }
-  if(!Output.Write("Data/Output.jpg")){
+  printf("0: Slave %d Reassembled\n", j);
+ }
+
+ if(!Output.Write("Data/Output.jpg")){
   printf("Cannot write image\n");
   return;
  }
 }
-
-
 //------------------------------------------------------------------------------
 
-/** This is the Slave function, the workers of this MPI application. */
 void Slave(int ID){
- // Start of "Hello World" example..............................................
- int dim[3];
+ int  dim[3];
  char idstr[32];
+
  MPI_Status stat;
 
  // receive from rank 0 (master):
  // This is a blocking receive, which is typical for slaves.
- // Recieve dimensions and total size of data from master.
- // Create matrices of the appropriate size to work with 
- // and send reply to Master
+ //int MPI_Send(void *data_to_send, int send_count, MPI_Datatype send_type, int destination_ID, int tag, MPI_Comm comm);
  MPI_Recv(dim, 3, MPI_INT, 0, TAG, MPI_COMM_WORLD, &stat);
- char In [dim[1]][dim[2]]; 
- char Out [dim[1]][dim[2]];
+ char In [dim[2]][dim[1]];
+ char Out [dim[2]][dim[1]];
  MPI_Send(dim, 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
 
- // receive from rank 0 (master):
- // receive data to work with.
- //reply to master.
-MPI_Recv(In, dim[0], MPI_CHAR, 0, TAG, MPI_COMM_WORLD, &stat);
 
-MPI_Send(dim, 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
+ MPI_Recv(In, dim[0], MPI_CHAR, 0, TAG, MPI_COMM_WORLD, &stat);
+
+ MPI_Send(dim, 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
+ //
+
+ int x, y, i, p, k;
+ int pixels[81]; //Array holding pixels to sort
 
 
-int x, y, i, p, k;
-int pixels[81]; //Array holding pixels to sort
-
-//Iterate over all of the pixels in the image
-for(y = 0; y < dim[1]; y++){
-  for(x = 0; x < dim[2]; x++){
-    k = 0;
-    for(p = (y-4); p < (y+5); p++){
-      for(i = (x-12); i < (x+13); i+=3){
+ for(y = 0; y < dim[2]; y++){
+   for(x = 0; x < dim[1]; x+=1){
+     k = 0;
+     for(p = (y-4); p < (y+5); p++){
+       for(i = (x-12); i < (x+13); i+=3){
         //Populate array and handle boundary cases by using 0's.
-        if((p>0) && (p<dim[0]) && (i>0) && (i<dim[2])){
+        if((p>0) && (p<dim[2]) && (i>0) && (i<dim[1])){
         	pixels[k] = In[p][i];
         }
         else{pixels[k] = 0;}
@@ -149,12 +132,15 @@ for(y = 0; y < dim[1]; y++){
     Out[y][x] = pixels[40]; //Median value
   }
 }
- //Return the filtered data to the Master.
-MPI_Send(Out, dim[0], MPI_CHAR, 0, TAG, MPI_COMM_WORLD);
+
+
+
+
+ MPI_Send(Out, dim[0], MPI_CHAR, 0, TAG, MPI_COMM_WORLD);
+ // End of "Hello World" example................................................
 }
 //------------------------------------------------------------------------------
 
-/** This is the entry point to the program. */
 int main(int argc, char** argv){
  int myid;
 
