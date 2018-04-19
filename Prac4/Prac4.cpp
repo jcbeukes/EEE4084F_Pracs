@@ -60,7 +60,7 @@ void Master(){
  int send[3];     //! Simple 3-entry Send Buffer (Segment Size, X Width, Y Height)
  MPI_Status stat; //! stat: Status of the MPI application
 
- if(!Input.Read("Data/greatwall.jpg")){
+ if(!Input.Read("Data/small.jpg")){
   printf("Cannot read image\n");
   return;
  }
@@ -72,9 +72,8 @@ void Master(){
  int size = Input.Height;
  char buf [yDiv+80][Input.Width * Input.Components]; // Space for four on either side
 
-
- for(j = 1; j < numprocs; j++){
    tic();
+ for(j = 1; j < numprocs; j++){
    if (j == 1){yDiv2 = yDiv+4;}
    else if (j < numprocs-1){yDiv2 = yDiv+8;}
    else {yDiv2 = yDiv+4;}
@@ -126,9 +125,9 @@ void Master(){
 
 
   printf("0: Slave %d Reassembled\n", j);
-  printf("Time = %lg ms\n", (double)toc()/1e-3);
+  
  }
-
+printf("Time = %lg ms\n", (double)toc()/1e-3);
  if(!Output.Write("Data/Output4.jpg")){
   printf("Cannot write image\n");
   return;
